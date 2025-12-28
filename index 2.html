@@ -1,0 +1,763 @@
+シンプルなスネークゲーム
+
+以下は、HTML、CSS、JavaScriptを1つのファイルにまとめたスネークゲームの完全なコードです。
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シンプルなスネークゲーム</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            padding: 20px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 800px;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00b4db, #0083b0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .game-description {
+            font-size: 1.1rem;
+            color: #aaa;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            text-align: center;
+            max-width: 600px;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            width: 100%;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .score-container, .high-score-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            min-width: 150px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .score-container {
+            color: #4cd964;
+        }
+        
+        .high-score-container {
+            color: #ff9500;
+        }
+        
+        #game-canvas {
+            border: 3px solid #00b4db;
+            border-radius: 8px;
+            background-color: #0f3460;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+        
+        .controls {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #00b4db, #0083b0);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #0083b0, #00b4db);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .instructions {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 350px;
+            width: 100%;
+        }
+        
+        .instructions h3 {
+            color: #00b4db;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+        
+        .instructions ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .instructions li {
+            margin-bottom: 12px;
+            padding-left: 25px;
+            position: relative;
+            line-height: 1.4;
+        }
+        
+        .instructions li:before {
+            content: "•";
+            color: #00b4db;
+            font-size: 1.5rem;
+            position: absolute;
+            left: 0;
+            top: -3px;
+        }
+        
+        .key-instructions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .key {
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 2px solid #00b4db;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .key.up {
+            grid-column: 2;
+        }
+        
+        .game-status {
+            font-size: 1.3rem;
+            margin-top: 15px;
+            text-align: center;
+            height: 30px;
+            color: #ff9500;
+            font-weight: bold;
+        }
+        
+        .mobile-controls {
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+            width: 200px;
+        }
+        
+        .mobile-btn {
+            background-color: rgba(0, 180, 219, 0.7);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.8rem;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .mobile-btn.up {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        
+        .mobile-btn.left {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        
+        .mobile-btn.right {
+            grid-column: 3;
+            grid-row: 2;
+        }
+        
+        .mobile-btn.down {
+            grid-column: 2;
+            grid-row: 2;
+        }
+        
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            #game-canvas {
+                width: 95vw;
+                max-width: 400px;
+                height: auto;
+            }
+            
+            .mobile-controls {
+                display: grid;
+            }
+            
+            .instructions {
+                max-width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .game-info {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>シンプルなスネークゲーム</h1>
+            <p class="game-description">蛇を操作して食べ物を集め、体を長くしていきましょう。壁や自分の体にぶつからないように注意！</p>
+        </header>
+        
+        <div class="game-area">
+            <div class="game-container">
+                <div class="game-info">
+                    <div class="score-container">スコア: <span id="score">0</span></div>
+                    <div class="high-score-container">ハイスコア: <span id="high-score">0</span></div>
+                </div>
+                
+                <canvas id="game-canvas" width="400" height="400"></canvas>
+                
+                <div class="game-status" id="game-status">ゲームスタート！矢印キーで操作</div>
+                
+                <div class="controls">
+                    <div class="buttons">
+                        <button id="start-btn">ゲーム開始</button>
+                        <button id="pause-btn">一時停止</button>
+                        <button id="reset-btn">リセット</button>
+                    </div>
+                    
+                    <div class="mobile-controls">
+                        <div class="mobile-btn up">↑</div>
+                        <div class="mobile-btn left">←</div>
+                        <div class="mobile-btn down">↓</div>
+                        <div class="mobile-btn right">→</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3>遊び方</h3>
+                <ul>
+                    <li>矢印キーで蛇の移動方向を変更します</li>
+                    <li>赤い食べ物を取るとスコアが10点増え、蛇が長くなります</li>
+                    <li>壁や自分の体にぶつかるとゲームオーバーです</li>
+                    <li>できるだけ多くの食べ物を集めてハイスコアを目指しましょう</li>
+                </ul>
+                
+                <div class="key-instructions">
+                    <div class="key up">↑</div>
+                    <div class="key left">←</div>
+                    <div class="key down">↓</div>
+                    <div class="key right">→</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ゲーム要素の取得
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const highScoreElement = document.getElementById('high-score');
+        const gameStatusElement = document.getElementById('game-status');
+        const startButton = document.getElementById('start-btn');
+        const pauseButton = document.getElementById('pause-btn');
+        const resetButton = document.getElementById('reset-btn');
+        
+        // モバイル用ボタン
+        const upButton = document.querySelector('.mobile-btn.up');
+        const downButton = document.querySelector('.mobile-btn.down');
+        const leftButton = document.querySelector('.mobile-btn.left');
+        const rightButton = document.querySelector('.mobile-btn.right');
+        
+        // ゲーム設定
+        const gridSize = 20;
+        const gridWidth = canvas.width / gridSize;
+        const gridHeight = canvas.height / gridSize;
+        
+        // ゲーム状態
+        let snake = [];
+        let food = {};
+        let direction = 'right';
+        let nextDirection = 'right';
+        let gameInterval;
+        let gameRunning = false;
+        let gamePaused = false;
+        let score = 0;
+        let highScore = localStorage.getItem('snakeHighScore') || 0;
+        highScoreElement.textContent = highScore;
+        
+        // ゲーム初期化
+        function initGame() {
+            // 蛇の初期位置（中央に3つのセグメント）
+            snake = [
+                {x: 10, y: 10},
+                {x: 9, y: 10},
+                {x: 8, y: 10}
+            ];
+            
+            // 食べ物の初期位置
+            generateFood();
+            
+            // ゲーム状態のリセット
+            direction = 'right';
+            nextDirection = 'right';
+            score = 0;
+            scoreElement.textContent = score;
+            gameStatusElement.textContent = 'ゲームスタート！矢印キーで操作';
+            gameStatusElement.style.color = '#ff9500';
+            
+            // ゲーム描画
+            draw();
+        }
+        
+        // ランダムな食べ物の生成
+        function generateFood() {
+            // 蛇の体と重ならない位置に食べ物を配置
+            let foodOnSnake;
+            do {
+                foodOnSnake = false;
+                food = {
+                    x: Math.floor(Math.random() * gridWidth),
+                    y: Math.floor(Math.random() * gridHeight)
+                };
+                
+                // 生成した食べ物が蛇の体の上にあるかチェック
+                for (let segment of snake) {
+                    if (segment.x === food.x && segment.y === food.y) {
+                        foodOnSnake = true;
+                        break;
+                    }
+                }
+            } while (foodOnSnake);
+        }
+        
+        // ゲームの描画
+        function draw() {
+            // キャンバスをクリア
+            ctx.fillStyle = '#0f3460';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 蛇の描画
+            snake.forEach((segment, index) => {
+                // 蛇の頭は異なる色で描画
+                if (index === 0) {
+                    ctx.fillStyle = '#4cd964'; // 頭は明るい緑
+                } else {
+                    ctx.fillStyle = '#00b4db'; // 体は青
+                }
+                
+                ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 1, gridSize - 1);
+                
+                // 蛇の体に模様を追加
+                if (index > 0) {
+                    ctx.fillStyle = '#0083b0';
+                    ctx.fillRect(
+                        segment.x * gridSize + 4, 
+                        segment.y * gridSize + 4, 
+                        gridSize - 9, 
+                        gridSize - 9
+                    );
+                }
+            });
+            
+            // 食べ物の描画（赤いリンゴのような形）
+            ctx.fillStyle = '#ff3b30';
+            ctx.beginPath();
+            ctx.arc(
+                food.x * gridSize + gridSize/2,
+                food.y * gridSize + gridSize/2,
+                gridSize/2 - 2,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+            
+            // 食べ物に模様を追加（リンゴの茎）
+            ctx.fillStyle = '#8b4513';
+            ctx.fillRect(food.x * gridSize + 8, food.y * gridSize - 3, 2, 5);
+            
+            // グリッド線の描画
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 1;
+            
+            // 縦線
+            for (let x = 0; x <= canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // 横線
+            for (let y = 0; y <= canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+        
+        // ゲームの更新
+        function updateGame() {
+            if (gamePaused || !gameRunning) return;
+            
+            // 方向の更新
+            direction = nextDirection;
+            
+            // 蛇の頭の新しい位置を計算
+            const head = {...snake[0]};
+            
+            switch (direction) {
+                case 'up':
+                    head.y -= 1;
+                    break;
+                case 'down':
+                    head.y += 1;
+                    break;
+                case 'left':
+                    head.x -= 1;
+                    break;
+                case 'right':
+                    head.x += 1;
+                    break;
+            }
+            
+            // 壁との衝突判定
+            if (
+                head.x < 0 || 
+                head.x >= gridWidth || 
+                head.y < 0 || 
+                head.y >= gridHeight
+            ) {
+                gameOver();
+                return;
+            }
+            
+            // 自分自身との衝突判定
+            for (let segment of snake) {
+                if (head.x === segment.x && head.y === segment.y) {
+                    gameOver();
+                    return;
+                }
+            }
+            
+            // 蛇の頭を新しい位置に追加
+            snake.unshift(head);
+            
+            // 食べ物を取ったかどうかの判定
+            if (head.x === food.x && head.y === food.y) {
+                // スコアを増加
+                score += 10;
+                scoreElement.textContent = score;
+                
+                // ハイスコアの更新
+                if (score > highScore) {
+                    highScore = score;
+                    highScoreElement.textContent = highScore;
+                    localStorage.setItem('snakeHighScore', highScore);
+                }
+                
+                // 新しい食べ物を生成
+                generateFood();
+                
+                // ゲーム状態を更新
+                gameStatusElement.textContent = `食べ物を取得！スコア: ${score}`;
+                gameStatusElement.style.color = '#4cd964';
+            } else {
+                // 食べ物を取っていない場合は尾を削除
+                snake.pop();
+            }
+            
+            // ゲームを描画
+            draw();
+        }
+        
+        // ゲームオーバー処理
+        function gameOver() {
+            gameRunning = false;
+            clearInterval(gameInterval);
+            
+            gameStatusElement.textContent = `ゲームオーバー！最終スコア: ${score}`;
+            gameStatusElement.style.color = '#ff3b30';
+            
+            // ゲームオーバー時に蛇を赤く表示
+            ctx.fillStyle = '#ff3b30';
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 1, gridSize - 1);
+            });
+        }
+        
+        // キー入力の処理
+        function handleKeyDown(event) {
+            // ゲームが実行中でない場合はキー入力を無視
+            if (!gameRunning) return;
+            
+            // 一時停止/再開の処理（スペースキー）
+            if (event.key === ' ' || event.key === 'Spacebar') {
+                togglePause();
+                return;
+            }
+            
+            // 方向キーの処理
+            switch (event.key) {
+                case 'ArrowUp':
+                    if (direction !== 'down') nextDirection = 'up';
+                    event.preventDefault();
+                    break;
+                case 'ArrowDown':
+                    if (direction !== 'up') nextDirection = 'down';
+                    event.preventDefault();
+                    break;
+                case 'ArrowLeft':
+                    if (direction !== 'right') nextDirection = 'left';
+                    event.preventDefault();
+                    break;
+                case 'ArrowRight':
+                    if (direction !== 'left') nextDirection = 'right';
+                    event.preventDefault();
+                    break;
+            }
+        }
+        
+        // ゲームの開始
+        function startGame() {
+            if (gameRunning) return;
+            
+            // ゲームがまだ初期化されていない場合は初期化
+            if (snake.length === 0) {
+                initGame();
+            }
+            
+            gameRunning = true;
+            gamePaused = false;
+            gameStatusElement.textContent = 'ゲーム実行中';
+            gameStatusElement.style.color = '#4cd964';
+            
+            // ゲームループの開始（100ミリ秒間隔）
+            clearInterval(gameInterval);
+            gameInterval = setInterval(updateGame, 100);
+        }
+        
+        // 一時停止/再開の切り替え
+        function togglePause() {
+            if (!gameRunning) return;
+            
+            gamePaused = !gamePaused;
+            
+            if (gamePaused) {
+                gameStatusElement.textContent = '一時停止中';
+                gameStatusElement.style.color = '#ff9500';
+                clearInterval(gameInterval);
+            } else {
+                gameStatusElement.textContent = 'ゲーム実行中';
+                gameStatusElement.style.color = '#4cd964';
+                gameInterval = setInterval(updateGame, 100);
+            }
+        }
+        
+        // ゲームのリセット
+        function resetGame() {
+            clearInterval(gameInterval);
+            gameRunning = false;
+            gamePaused = false;
+            initGame();
+        }
+        
+        // モバイルコントロールの処理
+        function setupMobileControls() {
+            upButton.addEventListener('click', () => {
+                if (direction !== 'down') nextDirection = 'up';
+            });
+            
+            downButton.addEventListener('click', () => {
+                if (direction !== 'up') nextDirection = 'down';
+            });
+            
+            leftButton.addEventListener('click', () => {
+                if (direction !== 'right') nextDirection = 'left';
+            });
+            
+            rightButton.addEventListener('click', () => {
+                if (direction !== 'left') nextDirection = 'right';
+            });
+            
+            // タッチデバイスでのタッチホールドの処理
+            let activeTouch = null;
+            
+            document.addEventListener('touchstart', (event) => {
+                if (activeTouch !== null) return;
+                
+                activeTouch = event.touches[0].identifier;
+                const touch = event.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                
+                // キャンバス上のタッチ位置を取得
+                const touchX = touch.clientX - rect.left;
+                const touchY = touch.clientY - rect.top;
+                
+                // 蛇の頭の位置
+                const head = snake[0];
+                const headX = head.x * gridSize + gridSize/2;
+                const headY = head.y * gridSize + gridSize/2;
+                
+                // タッチ位置に基づいて方向を決定
+                const deltaX = touchX - headX;
+                const deltaY = touchY - headY;
+                
+                // X軸とY軸のどちらの変化が大きいかで方向を決定
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    // 水平方向のタッチ
+                    if (deltaX > 0 && direction !== 'left') {
+                        nextDirection = 'right';
+                    } else if (deltaX < 0 && direction !== 'right') {
+                        nextDirection = 'left';
+                    }
+                } else {
+                    // 垂直方向のタッチ
+                    if (deltaY > 0 && direction !== 'up') {
+                        nextDirection = 'down';
+                    } else if (deltaY < 0 && direction !== 'down') {
+                        nextDirection = 'up';
+                    }
+                }
+            });
+            
+            document.addEventListener('touchend', () => {
+                activeTouch = null;
+            });
+        }
+        
+        // イベントリスナーの設定
+        startButton.addEventListener('click', startGame);
+        pauseButton.addEventListener('click', togglePause);
+        resetButton.addEventListener('click', resetGame);
+        document.addEventListener('keydown', handleKeyDown);
+        
+        // モバイルコントロールの設定
+        setupMobileControls();
+        
+        // 初期ゲームの描画
+        initGame();
+        
+        // ゲーム開始の説明を表示
+        setTimeout(() => {
+            if (!gameRunning) {
+                gameStatusElement.textContent = '「ゲーム開始」ボタンを押してスタート！';
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
+```
+
+ゲームの説明
+
+このスネークゲームには以下の機能があります：
+
+1. 基本的なゲームプレイ:
+   · 矢印キーで蛇を操作
+   · 赤い食べ物を取ってスコアを増やす
+   · 食べ物を取るごとに蛇が長くなる
+   · 壁や自分の体にぶつかるとゲームオーバー
+2. 追加機能:
+   · ハイスコアの保存（ブラウザのローカルストレージを使用）
+   · ゲームの開始/一時停止/リセット機能
+   · タッチスクリーン対応のモバイルコントロール
+   · レスポンシブデザイン（PC・スマートフォン両対応）
+3. 操作方法:
+   · PC: 矢印キーで移動、スペースキーで一時停止
+   · スマートフォン: 画面上のボタンまたはキャンバスをタッチして操作
+
+このコードをHTMLファイルとして保存し、ブラウザで開くだけでゲームをプレイできます。
